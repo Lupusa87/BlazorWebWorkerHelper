@@ -23,14 +23,14 @@ namespace BlazorWebWorkerHelper
 
             switch (a)
             {
-                case -1:
-                    result = BwwState.Error;
-                    break;
-                case 0:
+                case 1:
                     result = BwwState.Open;
                     break;
-                case 1:
+                case 2:
                     result = BwwState.Close;
+                    break;
+                case 3:
+                    result = BwwState.Error;
                     break;
                 default:
                     result = BwwState.Undefined;

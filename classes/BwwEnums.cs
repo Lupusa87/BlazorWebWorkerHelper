@@ -22,10 +22,10 @@ namespace BlazorWebWorkerHelper.classes
 
         public enum BwwState
         {
+            Undefined,
             Open,
             Close,
             Error,
-            Undefined,
         }
     }
 }

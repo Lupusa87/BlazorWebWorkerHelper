@@ -24,7 +24,8 @@ window.BwwJsFunctions = {
             type:0
         };
 
-        obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 0);
+        obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 1);
+        console.log("js InvokeStateChanged 1");
 
         b.ww.onmessage = function (e) { WwOnMessage(e, obj.dotnethelper); };
 
@@ -43,7 +44,8 @@ window.BwwJsFunctions = {
             type:1
         };
 
-        obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 0);
+        obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 1);
+        console.log("js InvokeStateChanged 1");
 
         b.ww.port.onmessage = function (e) { WwOnMessage(e, obj.dotnethelper); };
 
@@ -52,20 +54,6 @@ window.BwwJsFunctions = {
         WebWorkers_array.push(b);
 
         return true;
-    },
-    WwClose: function (WwID) {
-        var result = true;
-        var index = WebWorkers_array.findIndex(x => x.id === WwID);
-
-
-        if (index > -1) {
-            WebWorkers_array[index].ww = undefined;
-        }
-        else {
-            result = false;
-        }
-
-        return result;
     },
     WwRemove: function (WwID) {
         var result = true;

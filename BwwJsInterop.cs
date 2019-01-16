@@ -49,12 +49,6 @@ namespace BlazorWebWorkerHelper
 
         }
 
-        public static Task<bool> WwClose(string WsID)
-        {
-
-            return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwClose", WsID);
-        }
-
         public static Task<bool> WwRemove(string WsID)
         {
             return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwRemove", WsID);

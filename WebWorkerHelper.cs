@@ -112,26 +112,17 @@ namespace BlazorWebWorkerHelper
         [JSInvokable]
         public void InvokeOnError(string par_error)
         {
-            bwwState = BwwState.Error;
+            InvokeStateChanged(3);
             OnError?.Invoke(par_error);
         }
 
         [JSInvokable]
         public void InvokeStateChanged(short par_state)
         {
+            Console.WriteLine("c# InvokeStateChanged " + par_state);
+
             bwwState = BwwFunctions.ConvertStatus(par_state);
             OnStateChange?.Invoke(par_state);
-        }
-
-
-        public void Close()
-        {
-            if (DoLog)
-            {
-                Log = new List<BwwMessage>();
-            }
-            InvokeStateChanged(1);
-            BwwJsInterop.WwClose(_id);
         }
 
         public void Dispose()
@@ -140,7 +131,7 @@ namespace BlazorWebWorkerHelper
             {
                 Log = new List<BwwMessage>();
             }
-            InvokeStateChanged(1);
+            InvokeStateChanged(2);
             BwwJsInterop.WwRemove(_id);
             IsDisposed = true;
             GC.SuppressFinalize(this);

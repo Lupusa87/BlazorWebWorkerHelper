@@ -6,6 +6,14 @@
     <IsPackable>true</IsPackable>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
     <LangVersion>7.3</LangVersion>
+    <Authors>Lupusa</Authors>
+    <Version>1.0.1</Version>
+    <Description>This package contains web worker helper class for blazor.</Description>
+    <RepositoryUrl>https://github.com/Lupusa87/BlazorWebWorkerHelper</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags>Blazor</PackageTags>
+    <PackageReleaseNotes>First release 1/16/2019</PackageReleaseNotes>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
