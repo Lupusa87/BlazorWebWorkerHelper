@@ -8,7 +8,7 @@ using static BlazorWebWorkerHelper.classes.BwwEnums;
 
 namespace BlazorWebWorkerHelper
 {
-    public class WebWorkerHelper:IDisposable
+    public class WebWorkerHelper : IDisposable
     {
         public BWorkerType bworkerType { get; private set; } = BWorkerType.dedicated;
 
@@ -26,6 +26,9 @@ namespace BlazorWebWorkerHelper
 
         public List<BwwError> BwwError = new List<BwwError>();
 
+
+        public bool DoLog { get; set; } = true;
+        public int LogMaxCount { get; set; } = 100;
 
         public List<BwwMessage> Log = new List<BwwMessage>();
 
@@ -57,37 +60,52 @@ namespace BlazorWebWorkerHelper
             BwwJsInterop.WwAdd(_id, _url, bworkerType, new DotNetObjectRef(this));
         }
 
-
         public void send(string Par_Message)
         {
             if (!string.IsNullOrEmpty(Par_Message))
             {
                 BwwJsInterop.WwSend(_id, bworkerType, Par_Message);
-                Log.Add(new BwwMessage { ID = Log.Count + 1, Date = DateTime.Now, Message = Par_Message, MessageType = BwwMessageType.send });
-               
+
+
+                if (DoLog)
+                {
+                    Log.Add(new BwwMessage { ID = GetNewIDFromLog(), Date = DateTime.Now, Message = Par_Message, MessageType = BwwMessageType.send });
+
+                    if (Log.Count > LogMaxCount)
+                    {
+                        Log.RemoveAt(0);
+                    }
+                }
             }
         }
 
+        private int GetNewIDFromLog()
+        {
+
+            if (Log.Any())
+            {
+                return Log.Max(x => x.ID) + 1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
 
 
         [JSInvokable]
         public void InvokeOnMessage(string par_message)
         {
-            int k = 0;
-            if (Log.Any())
-            {
-                k = Log.Max(x => x.ID) + 1;
-            }
-            else
-            {
-                k = 1;
-            }
-            Log.Add(new BwwMessage { ID = k, Date = DateTime.Now, Message = par_message, MessageType = BwwMessageType.received });
-            if (Log.Count > 5)
-            {
-                Log.RemoveAt(0);
-            }
 
+            if (DoLog)
+            {
+                Log.Add(new BwwMessage { ID = GetNewIDFromLog(), Date = DateTime.Now, Message = par_message, MessageType = BwwMessageType.received });
+
+                if (Log.Count > LogMaxCount)
+                {
+                    Log.RemoveAt(0);
+                }
+            }
 
             OnMessage?.Invoke(par_message);
         }
@@ -95,8 +113,8 @@ namespace BlazorWebWorkerHelper
         [JSInvokable]
         public void InvokeOnError(string par_error)
         {
-           // bwwState = BwwState.Error;
-           // OnError?.Invoke(par_error);
+            bwwState = BwwState.Error;
+            OnError?.Invoke(par_error);
         }
 
         [JSInvokable]
@@ -109,14 +127,20 @@ namespace BlazorWebWorkerHelper
 
         public void Close()
         {
-            Log = new List<BwwMessage>();
+            if (DoLog)
+            {
+                Log = new List<BwwMessage>();
+            }
             InvokeStateChanged(1);
             BwwJsInterop.WwClose(_id);
         }
 
         public void Dispose()
         {
-            Log = new List<BwwMessage>();
+            if (DoLog)
+            {
+                Log = new List<BwwMessage>();
+            }
             InvokeStateChanged(1);
             BwwJsInterop.WwRemove(_id);
             IsDisposed = true;

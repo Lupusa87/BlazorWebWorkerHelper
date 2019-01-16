@@ -27,11 +27,6 @@ window.BwwJsFunctions = {
         obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 0);
 
         b.ww.onmessage = function (e) { WwOnMessage(e, obj.dotnethelper); };
-        //b.ws.onopen = function (evt) {
-
-        //    obj.dotnethelper.invokeMethodAsync('InvokeOnOpen', 1);
-
-        //};
 
         b.ww.addEventListener('error', function (e) { WwOnError(e, obj.dotnethelper); }, false);
        
@@ -51,17 +46,11 @@ window.BwwJsFunctions = {
         obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 0);
 
         b.ww.port.onmessage = function (e) { WwOnMessage(e, obj.dotnethelper); };
-        //b.ws.onopen = function (evt) {
-
-        //    obj.dotnethelper.invokeMethodAsync('InvokeOnOpen', 1);
-
-        //};
 
         b.ww.addEventListener('error', function (e) { WwOnError(e, obj.dotnethelper); }, false);
 
         WebWorkers_array.push(b);
 
-        console.log("added shared");
         return true;
     },
     WwClose: function (WwID) {
@@ -102,7 +91,6 @@ window.BwwJsFunctions = {
             WebWorkers_array[index].ww.postMessage(obj.wwMessage);
             result = true;
 
-            console.log("send dedicated");
         }
 
         return result;
@@ -116,7 +104,6 @@ window.BwwJsFunctions = {
 
             WebWorkers_array[index].ww.port.postMessage(obj.wwMessage);
             result = true;
-            console.log("send shared");
         }
 
         return result;
