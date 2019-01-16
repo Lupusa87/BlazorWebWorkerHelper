@@ -39,7 +39,6 @@ namespace BlazorWebWorkerHelper
         }
 
 
-
         private void _initialize(string Par_URL, BWorkerType par_type)
         {
             if (!string.IsNullOrEmpty(Par_URL))
