@@ -1,0 +1,1 @@
+# Blazor Web Worker Helper
