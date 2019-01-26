@@ -27,5 +27,38 @@ namespace BlazorWebWorkerHelper.classes
             Close,
             Error,
         }
+
+
+        public enum BwsTransportType
+        {
+            Text,
+            ArrayBuffer,
+            Blob,
+            //   ArrayBufferView,
+        }
+
+
+        public enum BwwTransportType
+        {
+            Text,
+            Binary,
+        }
+
+
+        public enum BCommandType
+        {
+            send,
+            WwDisconnect,
+            WsAdd,
+            WsRemove,
+            WsSetBinaryType,
+            MultyPurposeSwitch1,
+        }
+
+        public enum BResultType
+        {
+            ActualMessage,
+            StateChange,
+        }
     }
 }

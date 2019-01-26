@@ -1,12 +1,53 @@
 var WebWorkers_array = [];
 
-function WwOnMessage(e, dotnethelper) {
-    dotnethelper.invokeMethodAsync('InvokeOnMessage', e.data);
-}
 
-function WwOnError(e, dotnethelper) {
+
+function WwOnError(e, wwID, dotnethelper) {
     dotnethelper.invokeMethodAsync('InvokeOnError', e.message);
 }
+
+
+function WwOnMessage(e, wwID, dotnethelper) {
+   
+    if (e.data.isBinary) {
+
+        var a1 = new TextEncoder("utf-8").encode(JSON.stringify(e.data));
+
+        var allocateArrayMethod = Blazor.platform.findMethod(
+            'BlazorWebWorkerHelper',
+            'BlazorWebWorkerHelper',
+            'StaticClass',
+            'AllocateArray'
+        );
+
+        var dotNetArray = Blazor.platform.callMethod(allocateArrayMethod,
+            null,
+            [Blazor.platform.toDotNetString(a1.byteLength.toString())]);
+
+        var arr = Blazor.platform.toUint8Array(dotNetArray);
+
+        arr.set(new Uint8Array(a1));
+
+        var receiveResponseMethod = Blazor.platform.findMethod(
+            'BlazorWebWorkerHelper',
+            'BlazorWebWorkerHelper',
+            'StaticClass',
+            'HandleMessageBinary'
+        );
+
+        Blazor.platform.callMethod(receiveResponseMethod,
+            null,
+            [dotNetArray, Blazor.platform.toDotNetString(wwID)]);
+
+    }
+    else {
+
+       
+        dotnethelper.invokeMethodAsync('InvokeOnMessage', JSON.stringify(e.data));
+       
+    }
+}
+
 
 
 window.BwwJsFunctions = {
@@ -25,11 +66,11 @@ window.BwwJsFunctions = {
         };
 
         obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 1);
-        console.log("js InvokeStateChanged 1");
 
-        b.ww.onmessage = function (e) { WwOnMessage(e, obj.dotnethelper); };
 
-        b.ww.addEventListener('error', function (e) { WwOnError(e, obj.dotnethelper); }, false);
+      b.ww.onmessage = function (e) { WwOnMessage(e, obj.wwID, obj.dotnethelper); };
+
+      b.ww.addEventListener('error', function (e) { WwOnError(e, obj.wwID, obj.dotnethelper); }, false);
        
         WebWorkers_array.push(b);
 
@@ -45,11 +86,11 @@ window.BwwJsFunctions = {
         };
 
         obj.dotnethelper.invokeMethodAsync('InvokeStateChanged', 1);
-        console.log("js InvokeStateChanged 1");
 
-        b.ww.port.onmessage = function (e) { WwOnMessage(e, obj.dotnethelper); };
 
-        b.ww.addEventListener('error', function (e) { WwOnError(e, obj.dotnethelper); }, false);
+        b.ww.port.onmessage = function (e) { WwOnMessage(e, obj.wwID, obj.dotnethelper); };
+
+        b.ww.addEventListener('error', function (e) { WwOnError(e, obj.wwID, obj.dotnethelper); }, false);
 
         WebWorkers_array.push(b);
 
@@ -76,7 +117,23 @@ window.BwwJsFunctions = {
 
         if (index > -1) {
 
-            WebWorkers_array[index].ww.postMessage(obj.wwMessage);
+            WebWorkers_array[index].ww.postMessage({ cmd: obj.wCommandType, msg: obj.wwMessage });
+            result = true;
+
+        }
+
+        return result;
+    },
+    WwSendDedicatedBinary: function (id, cmd, data) {
+        var result = false;
+
+        var index = WebWorkers_array.findIndex(x => x.id === Blazor.platform.toJavaScriptString(id));
+
+        if (index > -1) {
+
+            arr = Blazor.platform.toUint8Array(data);
+
+            WebWorkers_array[index].ww.postMessage({ cmd: cmd, msg: arr });
             result = true;
 
         }
@@ -90,8 +147,24 @@ window.BwwJsFunctions = {
 
         if (index > -1) {
 
-            WebWorkers_array[index].ww.port.postMessage(obj.wwMessage);
+            WebWorkers_array[index].ww.port.postMessage({ cmd:obj.wCommandType, msg:obj.wwMessage });
             result = true;
+        }
+
+        return result;
+    },
+    WwSendSharedBinary: function (id, cmd, data) {
+        var result = false;
+
+        var index = WebWorkers_array.findIndex(x => x.id === Blazor.platform.toJavaScriptString(id));
+
+        if (index > -1) {
+
+            arr = Blazor.platform.toUint8Array(data);
+               
+            WebWorkers_array[index].ww.port.postMessage({ cmd: cmd, msg: arr });
+            result = true;
+
         }
 
         return result;

@@ -9,8 +9,10 @@ namespace BlazorWebWorkerHelper.classes
     public class BwwMessage
     {
         public int ID { get; set; }
+        public Guid GUID { get; set; } = Guid.NewGuid();
         public DateTime Date { get; set; }
-        public string Message { get; set; }
         public BwwMessageType MessageType { get; set; }
+        public BwwTransportType TransportType { get; set; }
+        public BwwBag WwBag { get; set; }
     }
 }

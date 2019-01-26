@@ -1,10 +1,13 @@
 ﻿using BlazorWebWorkerHelper.classes;
+using BlazorWebWorkerHelper.WsClasses;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using static BlazorWebWorkerHelper.classes.BwwEnums;
+
 
 namespace BlazorWebWorkerHelper
 {
@@ -12,16 +15,18 @@ namespace BlazorWebWorkerHelper
     {
         public BWorkerType bworkerType { get; private set; } = BWorkerType.dedicated;
 
+        public BwwTransportType bwwTransportType { get; set; } = BwwTransportType.Text;
+
         public BwwState bwwState = BwwState.Undefined;
 
         public bool IsDisposed = false;
 
-        private string _id = BwwFunctions.Cmd_Get_UniqueID();
+        public string _id { get; private set; } = BwwFunctions.Cmd_Get_UniqueID();
 
         private string _url = string.Empty;
 
         public Action<short> OnStateChange { get; set; }
-        public Action<string> OnMessage { get; set; }
+        public Action<BwwMessage> OnMessage { get; set; }
         public Action<string> OnError { get; set; }
 
         public List<BwwError> BwwError = new List<BwwError>();
@@ -32,19 +37,25 @@ namespace BlazorWebWorkerHelper
 
         public List<BwwMessage> Log = new List<BwwMessage>();
 
-        public WebWorkerHelper(string Par_URL, BWorkerType par_type = BWorkerType.dedicated)
+        public int Active_WebSocket_ID;
+
+        public List<BWebSocket> Ws_List = new List<BWebSocket>();
+
+        public WebWorkerHelper(string Par_URL, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
         {
 
-            _initialize(Par_URL, par_type);
+            _initialize(Par_URL, par_WorkerType, par_TransportType);
         }
 
 
-        private void _initialize(string Par_URL, BWorkerType par_type)
+        private void _initialize(string Par_URL, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
         {
             if (!string.IsNullOrEmpty(Par_URL))
             {
+                StaticClass.webWorkerHelpers_List.Add(this);
                 _url = Par_URL;
-                bworkerType = par_type;
+                bworkerType = par_WorkerType;
+                bwwTransportType = par_TransportType;
                 _create();
             }
             else
@@ -59,16 +70,22 @@ namespace BlazorWebWorkerHelper
             BwwJsInterop.WwAdd(_id, _url, bworkerType, new DotNetObjectRef(this));
         }
 
-        public void send(string Par_Message)
+        public void Send(BCommandType WCommandType, string Par_Message, bool AddToLog=true)
         {
             if (!string.IsNullOrEmpty(Par_Message))
             {
-                BwwJsInterop.WwSend(_id, bworkerType, Par_Message);
+                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message);
 
 
-                if (DoLog)
+                if (DoLog && AddToLog)
                 {
-                    Log.Add(new BwwMessage { ID = GetNewIDFromLog(), Date = DateTime.Now, Message = Par_Message, MessageType = BwwMessageType.send });
+
+                    Log.Add(new BwwMessage { ID = GetNewIDFromLog(),
+                        Date = DateTime.Now,
+                        MessageType = BwwMessageType.send,
+                        TransportType =  BwwTransportType.Text,
+                        WwBag = new BwwBag { data = Par_Message},
+                    });
 
                     if (Log.Count > LogMaxCount)
                     {
@@ -76,6 +93,35 @@ namespace BlazorWebWorkerHelper
                     }
                 }
             }
+        }
+
+        public void Send(BCommandType WCommandType, byte[] Par_Message, bool AddToLog = true)
+        {
+            string result = string.Empty;
+
+            if (Par_Message.Length > 0)
+            {
+                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message);
+
+                if (DoLog && AddToLog)
+                {
+
+                    Log.Add(new BwwMessage
+                    {
+                        ID = GetNewIDFromLog(),
+                        Date = DateTime.Now,
+                        MessageType = BwwMessageType.send,
+                        TransportType =  BwwTransportType.Binary,
+                        WwBag = new BwwBag { binarydata = Par_Message },
+                    });
+                    if (Log.Count > LogMaxCount)
+                    {
+                        Log.RemoveAt(0);
+                    }
+                }
+
+            }
+
         }
 
         private int GetNewIDFromLog()
@@ -91,24 +137,6 @@ namespace BlazorWebWorkerHelper
             }
         }
 
-
-        [JSInvokable]
-        public void InvokeOnMessage(string par_message)
-        {
-
-            if (DoLog)
-            {
-                Log.Add(new BwwMessage { ID = GetNewIDFromLog(), Date = DateTime.Now, Message = par_message, MessageType = BwwMessageType.received });
-
-                if (Log.Count > LogMaxCount)
-                {
-                    Log.RemoveAt(0);
-                }
-            }
-
-            OnMessage?.Invoke(par_message);
-        }
-
         [JSInvokable]
         public void InvokeOnError(string par_error)
         {
@@ -119,11 +147,88 @@ namespace BlazorWebWorkerHelper
         [JSInvokable]
         public void InvokeStateChanged(short par_state)
         {
-            Console.WriteLine("c# InvokeStateChanged " + par_state);
 
             bwwState = BwwFunctions.ConvertStatus(par_state);
             OnStateChange?.Invoke(par_state);
         }
+
+
+        [JSInvokable]
+        public void InvokeOnMessage(string par_message)
+        {
+           
+            BwwBag msg = Json.Deserialize<BwwBag>(par_message);
+         
+            BwwMessage b = new BwwMessage
+            {
+                ID = GetNewIDFromLog(),
+                Date = DateTime.Now,
+                MessageType = BwwMessageType.received,
+                TransportType = BwwTransportType.Text,
+                WwBag = msg,
+            };
+
+
+            if (DoLog)
+            {
+                Log.Add(b);
+
+                if (Log.Count > LogMaxCount)
+                {
+                    Log.RemoveAt(0);
+                }
+            }
+
+            OnMessage?.Invoke(b);
+        }
+
+      
+
+
+        public void InvokeOnMessageBinary(byte[] data)
+        {
+
+           
+            BwwBag msg = Json.Deserialize<BwwBag>(Encoding.UTF8.GetString(data));
+     
+
+            BwwMessage b = new BwwMessage
+            {
+                ID = GetNewIDFromLog(),
+                Date = DateTime.Now,
+                MessageType = BwwMessageType.received,
+                TransportType =  BwwTransportType.Binary,
+                WwBag = msg
+            };
+
+            if (DoLog)
+            {
+
+                Log.Add(b);
+
+                if (Log.Count > LogMaxCount)
+                {
+                    Log.RemoveAt(0);
+                }
+            }
+
+
+            OnMessage?.Invoke(b);
+        }
+
+       
+
+        private BWebSocket GetActiveWebSocket()
+        {
+            BWebSocket result = new BWebSocket(_id);
+            if (Ws_List.Any())
+            {
+                result = Ws_List.Single(x => x.bWebSocketID == Active_WebSocket_ID);
+            }
+
+            return result;
+        }
+
 
         public void Dispose()
         {
@@ -133,6 +238,11 @@ namespace BlazorWebWorkerHelper
             }
             InvokeStateChanged(2);
             BwwJsInterop.WwRemove(_id);
+
+
+            StaticClass.webWorkerHelpers_List.Remove(this);
+
+
             IsDisposed = true;
             GC.SuppressFinalize(this);
         }

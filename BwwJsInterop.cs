@@ -1,6 +1,8 @@
 using Microsoft.JSInterop;
+using Mono.WebAssembly.Interop;
 using System.Threading.Tasks;
 using static BlazorWebWorkerHelper.classes.BwwEnums;
+
 
 namespace BlazorWebWorkerHelper
 {
@@ -36,18 +38,53 @@ namespace BlazorWebWorkerHelper
         }
 
 
-        public static Task<bool> WwSend(string WwID, BWorkerType WsType, string WwMessage)
+        public static Task<bool> WwSend(string WwID, BWorkerType WwType, BCommandType WCommandType, string WwMessage)
         {
-            if (WsType == BWorkerType.shared)
+
+
+            if (WwType == BWorkerType.shared)
             {
-                return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwSendShared", new { WwID, WwMessage });
+                return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwSendShared", new { WwID, WCommandType, WwMessage });
             }
 
-            return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwSendDedicated", new { WwID, WwMessage });
+            return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwSendDedicated", new { WwID, WCommandType, WwMessage });
 
 
 
         }
+
+
+        public static bool WwSend(string WwID, BWorkerType WwType, BCommandType WCommandType, byte[] WsMessage)
+        {
+            if (WwType == BWorkerType.shared)
+            {
+                if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
+                {
+                    return mono.InvokeUnmarshalled<string, short, byte[], bool>(
+                        "BwwJsFunctions.WwSendSharedBinary",
+                        WwID,
+                        (short)WCommandType,
+                        WsMessage);
+                }
+            }
+            else
+            {
+                if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
+                {
+                    return mono.InvokeUnmarshalled<string, short, byte[], bool>(
+                        "BwwJsFunctions.WwSendDedicatedBinary",
+                        WwID,
+                        (short)WCommandType,
+                        WsMessage);
+                }
+            }
+
+            
+
+            return false;
+
+        }
+
 
         public static Task<bool> WwRemove(string WsID)
         {
