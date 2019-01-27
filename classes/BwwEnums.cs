@@ -49,16 +49,21 @@ namespace BlazorWebWorkerHelper.classes
         {
             send,
             WwDisconnect,
+            WwSync,
             WsAdd,
             WsRemove,
             WsSetBinaryType,
-            MultyPurposeSwitch1,
+            MultyPurposeItem1,
+            MultyPurposeItem2,
+            MultyPurposeItem3,
         }
 
         public enum BResultType
         {
             ActualMessage,
             StateChange,
+            MultyPurposeItem1,
+            MultyPurposeItem2,
         }
     }
 }

@@ -21,7 +21,7 @@ namespace BlazorWebWorkerHelper.WsClasses
             ParentID = Par_ParentID;
         }
 
-            public void SetTransportType(BwsTransportType par_bwsTransportType)
+        public void SetTransportType(BwsTransportType par_bwsTransportType)
         {
             
             if (bwsTransportType != par_bwsTransportType)

@@ -15,13 +15,16 @@ namespace BlazorWebWorkerHelper
     {
         public BWorkerType bworkerType { get; private set; } = BWorkerType.dedicated;
 
-        public BwwTransportType bwwTransportType { get; set; } = BwwTransportType.Text;
+        public BwwTransportType bwwTransportType { get; private set; } = BwwTransportType.Text;
 
         public BwwState bwwState = BwwState.Undefined;
 
         public bool IsDisposed = false;
 
         public string _id { get; private set; } = BwwFunctions.Cmd_Get_UniqueID();
+
+        public string _NameForSharedWW { get; private set; }
+
 
         private string _url = string.Empty;
 
@@ -41,19 +44,20 @@ namespace BlazorWebWorkerHelper
 
         public List<BWebSocket> Ws_List = new List<BWebSocket>();
 
-        public WebWorkerHelper(string Par_URL, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
+        public WebWorkerHelper(string Par_URL,string Par_NameForSharedWW, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
         {
 
-            _initialize(Par_URL, par_WorkerType, par_TransportType);
+            _initialize(Par_URL, Par_NameForSharedWW, par_WorkerType, par_TransportType);
         }
 
 
-        private void _initialize(string Par_URL, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
+        private void _initialize(string Par_URL, string Par_NameForSharedWW, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
         {
             if (!string.IsNullOrEmpty(Par_URL))
             {
                 StaticClass.webWorkerHelpers_List.Add(this);
                 _url = Par_URL;
+                _NameForSharedWW = Par_NameForSharedWW;
                 bworkerType = par_WorkerType;
                 bwwTransportType = par_TransportType;
                 _create();
@@ -67,13 +71,14 @@ namespace BlazorWebWorkerHelper
 
         private void _create()
         {
-            BwwJsInterop.WwAdd(_id, _url, bworkerType, new DotNetObjectRef(this));
+            BwwJsInterop.WwAdd(_id, _url, _NameForSharedWW, bworkerType, new DotNetObjectRef(this));
         }
 
         public void Send(BCommandType WCommandType, string Par_Message, bool AddToLog=true)
         {
             if (!string.IsNullOrEmpty(Par_Message))
             {
+             
                 BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message);
 
 
@@ -92,6 +97,10 @@ namespace BlazorWebWorkerHelper
                         Log.RemoveAt(0);
                     }
                 }
+            }
+            else
+            {
+                Console.WriteLine("input is empty, method send");
             }
         }
 
@@ -188,9 +197,8 @@ namespace BlazorWebWorkerHelper
         public void InvokeOnMessageBinary(byte[] data)
         {
 
-           
             BwwBag msg = Json.Deserialize<BwwBag>(Encoding.UTF8.GetString(data));
-     
+
 
             BwwMessage b = new BwwMessage
             {
@@ -218,7 +226,7 @@ namespace BlazorWebWorkerHelper
 
        
 
-        private BWebSocket GetActiveWebSocket()
+        public BWebSocket GetActiveWebSocket()
         {
             BWebSocket result = new BWebSocket(_id);
             if (Ws_List.Any())
@@ -230,7 +238,24 @@ namespace BlazorWebWorkerHelper
         }
 
 
-        public void Dispose()
+
+        public void SetTransportType(BwwTransportType par_bwwTransportType)
+        {
+            if (bwwTransportType!=par_bwwTransportType)
+            {
+                bwwTransportType = par_bwwTransportType;
+
+                if (Ws_List.Any())
+                {
+                    foreach (var item in Ws_List)
+                    {
+                        item.SetTransportType((BwsTransportType)par_bwwTransportType);
+                    }
+                }
+            }
+        }
+
+            public void Dispose()
         {
             if (DoLog)
             {

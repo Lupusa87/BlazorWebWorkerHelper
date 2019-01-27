@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
+using System;
 using System.Threading.Tasks;
 using static BlazorWebWorkerHelper.classes.BwwEnums;
 
@@ -25,15 +26,15 @@ namespace BlazorWebWorkerHelper
         }
 
 
-        public static Task<bool> WwAdd(string WwID, string WwUrl, BWorkerType WsType, DotNetObjectRef dotnethelper)
+        public static Task<bool> WwAdd(string WwID, string WwUrl, string WwName, BWorkerType WsType, DotNetObjectRef dotnethelper)
         {
 
             if (WsType == BWorkerType.shared)
             {  
-               return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwAddShared", new { WwID, WwUrl, dotnethelper });    
+               return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwAddShared", new { WwID, WwUrl, WwName, dotnethelper });    
             }
 
-            return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwAddDedicated", new { WwID, WwUrl, dotnethelper });
+            return JSRuntime.Current.InvokeAsync<bool>("BwwJsFunctions.WwAddDedicated", new { WwID, WwUrl, WwName, dotnethelper });
 
         }
 

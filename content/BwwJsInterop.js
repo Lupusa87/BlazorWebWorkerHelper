@@ -8,9 +8,9 @@ function WwOnError(e, wwID, dotnethelper) {
 
 
 function WwOnMessage(e, wwID, dotnethelper) {
-   
-    if (e.data.isBinary) {
 
+    if (e.data.isBinary) {
+  
         var a1 = new TextEncoder("utf-8").encode(JSON.stringify(e.data));
 
         var allocateArrayMethod = Blazor.platform.findMethod(
@@ -34,7 +34,7 @@ function WwOnMessage(e, wwID, dotnethelper) {
             'StaticClass',
             'HandleMessageBinary'
         );
-
+ 
         Blazor.platform.callMethod(receiveResponseMethod,
             null,
             [dotNetArray, Blazor.platform.toDotNetString(wwID)]);
@@ -61,6 +61,7 @@ window.BwwJsFunctions = {
 
         var b = {
             id: obj.wwID,
+            name: '',
             ww: new Worker(obj.wwUrl),
             type:0
         };
@@ -81,7 +82,8 @@ window.BwwJsFunctions = {
 
         var b = {
             id: obj.wwID,
-            ww: new SharedWorker(obj.wwUrl),
+            name: obj.wwName,
+            ww: new SharedWorker(obj.wwUrl, obj.wwName),
             type:1
         };
 
@@ -161,8 +163,9 @@ window.BwwJsFunctions = {
         if (index > -1) {
 
             arr = Blazor.platform.toUint8Array(data);
-               
+            
             WebWorkers_array[index].ww.port.postMessage({ cmd: cmd, msg: arr });
+           
             result = true;
 
         }
