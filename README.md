@@ -4,7 +4,7 @@ This repo contains Pure Web Worker library for blazor, you can work with **dedic
 
 [Project](https://www.nuget.org/packages/BlazorWebWorkerHelper/) is available on nuget.
 
-For install use command - **Install-Package BlazorWebWorkerHelper -Version 1.0.2**
+For install use command - **Install-Package BlazorWebWorkerHelper -Version 1.0.3**
 
 You can use web worker in blazor easy and convenient way using this library.
 
