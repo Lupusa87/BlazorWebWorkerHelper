@@ -134,12 +134,12 @@ window.BwwJsFunctions = {
 
         if (index > -1) {
 
-            arr = Blazor.platform.toUint8Array(data);
-
-           
             b = JSON.parse(Blazor.platform.toJavaScriptString(bag));
+
+            //it is cloning arraybuffer, direct without cloning was giving error!
+            buffer = new Uint8Array(Array.from(Blazor.platform.toUint8Array(data))).buffer;
            
-            WebWorkers_array[index].ww.port.postMessage({ cmd: b.cmd, msg: arr, args: b.args });
+            WebWorkers_array[index].ww.postMessage({ cmd: b.cmd, msg: buffer, args: b.args }, [buffer]);
 
             result = true;
 

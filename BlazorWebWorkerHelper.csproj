@@ -7,13 +7,14 @@
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
     <LangVersion>7.3</LangVersion>
     <Authors>Lupusa</Authors>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Description>This package contains web worker helper class for blazor.</Description>
     <RepositoryUrl>https://github.com/Lupusa87/BlazorWebWorkerHelper</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>Blazor</PackageTags>
     <PackageReleaseNotes>First release 1/16/2019
-Release 2 - 1/26/2019</PackageReleaseNotes>
+Release 2 - 1/26/2019
+Release 3 - 1/28/2019</PackageReleaseNotes>
     <NeutralLanguage>en</NeutralLanguage>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
