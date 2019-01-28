@@ -8,10 +8,8 @@ function WwOnError(e, wwID, dotnethelper) {
 
 
 function WwOnMessage(e, wwID, dotnethelper) {
-
+ 
     if (e.data.isBinary) {
-  
-        var a1 = new TextEncoder("utf-8").encode(JSON.stringify(e.data));
 
         var allocateArrayMethod = Blazor.platform.findMethod(
             'BlazorWebWorkerHelper',
@@ -22,11 +20,12 @@ function WwOnMessage(e, wwID, dotnethelper) {
 
         var dotNetArray = Blazor.platform.callMethod(allocateArrayMethod,
             null,
-            [Blazor.platform.toDotNetString(a1.byteLength.toString())]);
+            [Blazor.platform.toDotNetString(e.data.binarydata.byteLength.toString())]);
 
         var arr = Blazor.platform.toUint8Array(dotNetArray);
 
-        arr.set(new Uint8Array(a1));
+       
+        arr.set(new Uint8Array(e.data.binarydata));
 
         var receiveResponseMethod = Blazor.platform.findMethod(
             'BlazorWebWorkerHelper',
@@ -34,15 +33,17 @@ function WwOnMessage(e, wwID, dotnethelper) {
             'StaticClass',
             'HandleMessageBinary'
         );
- 
+
+        e.data.binarydata = null;
+        
+       
         Blazor.platform.callMethod(receiveResponseMethod,
             null,
-            [dotNetArray, Blazor.platform.toDotNetString(wwID)]);
+            [dotNetArray, Blazor.platform.toDotNetString(wwID), Blazor.platform.toDotNetString(JSON.stringify(e.data))]);
 
     }
     else {
 
-       
         dotnethelper.invokeMethodAsync('InvokeOnMessage', JSON.stringify(e.data));
        
     }
@@ -119,14 +120,14 @@ window.BwwJsFunctions = {
 
         if (index > -1) {
 
-            WebWorkers_array[index].ww.postMessage({ cmd: obj.wCommandType, msg: obj.wwMessage });
+            WebWorkers_array[index].ww.postMessage({ cmd: obj.wCommandType, msg: obj.wwMessage, args: obj.additionalArgs });
             result = true;
 
         }
 
         return result;
     },
-    WwSendDedicatedBinary: function (id, cmd, data) {
+    WwSendDedicatedBinary: function (id, bag, data) {
         var result = false;
 
         var index = WebWorkers_array.findIndex(x => x.id === Blazor.platform.toJavaScriptString(id));
@@ -135,7 +136,11 @@ window.BwwJsFunctions = {
 
             arr = Blazor.platform.toUint8Array(data);
 
-            WebWorkers_array[index].ww.postMessage({ cmd: cmd, msg: arr });
+           
+            b = JSON.parse(Blazor.platform.toJavaScriptString(bag));
+           
+            WebWorkers_array[index].ww.port.postMessage({ cmd: b.cmd, msg: arr, args: b.args });
+
             result = true;
 
         }
@@ -149,23 +154,26 @@ window.BwwJsFunctions = {
 
         if (index > -1) {
 
-            WebWorkers_array[index].ww.port.postMessage({ cmd:obj.wCommandType, msg:obj.wwMessage });
+            WebWorkers_array[index].ww.port.postMessage({ cmd: obj.wCommandType, msg: obj.wwMessage, args: obj.additionalArgs});
             result = true;
         }
 
         return result;
     },
-    WwSendSharedBinary: function (id, cmd, data) {
+    WwSendSharedBinary: function (id, bag, data) {
         var result = false;
 
         var index = WebWorkers_array.findIndex(x => x.id === Blazor.platform.toJavaScriptString(id));
 
         if (index > -1) {
-
-            arr = Blazor.platform.toUint8Array(data);
-            
-            WebWorkers_array[index].ww.port.postMessage({ cmd: cmd, msg: arr });
            
+            b = JSON.parse(Blazor.platform.toJavaScriptString(bag));
+
+            //it is cloning arraybuffer, direct without cloning was giving error!
+            buffer = new Uint8Array(Array.from(Blazor.platform.toUint8Array(data))).buffer;
+
+            WebWorkers_array[index].ww.port.postMessage({ cmd: b.cmd, msg: buffer, args: b.args }, [buffer]);
+            
             result = true;
 
         }

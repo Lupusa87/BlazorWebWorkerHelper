@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace BlazorWebWorkerHelper
@@ -18,14 +19,16 @@ namespace BlazorWebWorkerHelper
 
 
         [JSInvokable]
-        public static void HandleMessageBinary(byte[] par_message, string wwID)
+        public static void HandleMessageBinary(byte[] par_message, string wwID, string par_bag)
         {
-
+            
             if (webWorkerHelpers_List.Any())
             {
                 if (webWorkerHelpers_List.Any(x => x._id.Equals(wwID, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    webWorkerHelpers_List.Single(x => x._id.Equals(wwID, StringComparison.InvariantCultureIgnoreCase)).InvokeOnMessageBinary(par_message);
+                    webWorkerHelpers_List.Single(x => x._id.Equals(
+                        wwID, StringComparison.InvariantCultureIgnoreCase)
+                        ).InvokeOnMessageBinary(par_message, par_bag);
                 }
             }
         }

@@ -44,8 +44,11 @@ namespace BlazorWebWorkerHelper.WsClasses
                     {
                         if (StaticClass.webWorkerHelpers_List.Any(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)))
                         {
-                            StaticClass.webWorkerHelpers_List.Single(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)).Send(BCommandType.WsSetBinaryType,
-                        Json.Serialize(new { wsID = id, wsBinaryType = "arraybuffer" }));
+                            //StaticClass.webWorkerHelpers_List.Single(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)).Send(BCommandType.WsSetBinaryType,
+                            //Json.Serialize(new { wsID = id, wsBinaryType = "arraybuffer" }));
+                            StaticClass.webWorkerHelpers_List.Single(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)).Send(
+                                BCommandType.WsSetBinaryType,
+                                "arraybuffer", id);
                         }
                     };
                     break;
@@ -54,8 +57,11 @@ namespace BlazorWebWorkerHelper.WsClasses
                     {
                         if (StaticClass.webWorkerHelpers_List.Any(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)))
                         {
-                            StaticClass.webWorkerHelpers_List.Single(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)).Send(BCommandType.WsSetBinaryType,
-                        Json.Serialize(new { wsID = id, wsBinaryType = "blob" }));
+                            //StaticClass.webWorkerHelpers_List.Single(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)).Send(BCommandType.WsSetBinaryType,
+                            //Json.Serialize(new { wsID = id, wsBinaryType = "blob" }));
+                            StaticClass.webWorkerHelpers_List.Single(x => x._id.Equals(ParentID, StringComparison.InvariantCultureIgnoreCase)).Send(
+                                BCommandType.WsSetBinaryType,
+                                "blob", id);
                         }
                     };
                     break;

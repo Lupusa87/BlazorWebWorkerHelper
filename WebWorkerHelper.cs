@@ -3,7 +3,11 @@ using BlazorWebWorkerHelper.WsClasses;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using static BlazorWebWorkerHelper.classes.BwwEnums;
@@ -74,12 +78,12 @@ namespace BlazorWebWorkerHelper
             BwwJsInterop.WwAdd(_id, _url, _NameForSharedWW, bworkerType, new DotNetObjectRef(this));
         }
 
-        public void Send(BCommandType WCommandType, string Par_Message, bool AddToLog=true)
+        public void Send(BCommandType WCommandType, string Par_Message, string AdditionalArgs, bool AddToLog=true)
         {
             if (!string.IsNullOrEmpty(Par_Message))
             {
              
-                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message);
+                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message, AdditionalArgs);
 
 
                 if (DoLog && AddToLog)
@@ -104,13 +108,15 @@ namespace BlazorWebWorkerHelper
             }
         }
 
-        public void Send(BCommandType WCommandType, byte[] Par_Message, bool AddToLog = true)
+        public void Send(BCommandType WCommandType, byte[] Par_Message, string AdditionalArgs, bool AddToLog = true)
         {
             string result = string.Empty;
 
             if (Par_Message.Length > 0)
             {
-                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message);
+
+               
+                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message, AdditionalArgs);
 
                 if (DoLog && AddToLog)
                 {
@@ -191,13 +197,23 @@ namespace BlazorWebWorkerHelper
             OnMessage?.Invoke(b);
         }
 
-      
 
+        private object ByteArrayToObject(byte[] arrBytes)
+        {
+            MemoryStream memStream = new MemoryStream();
+            BinaryFormatter binForm = new BinaryFormatter();
+            memStream.Write(arrBytes, 0, arrBytes.Length);
+            memStream.Seek(0, SeekOrigin.Begin);
+            object obj = (object)binForm.Deserialize(memStream);
 
-        public void InvokeOnMessageBinary(byte[] data)
+            return obj;
+        }
+
+        public void InvokeOnMessageBinary(byte[] data, string bag)
         {
 
-            BwwBag msg = Json.Deserialize<BwwBag>(Encoding.UTF8.GetString(data));
+            BwwBag msg = Json.Deserialize<BwwBag>(bag);
+            msg.binarydata = data;
 
 
             BwwMessage b = new BwwMessage
