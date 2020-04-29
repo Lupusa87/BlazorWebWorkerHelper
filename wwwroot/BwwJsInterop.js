@@ -1,5 +1,5 @@
 var WebWorkers_array = [];
-
+var tmpValue1;
 
 
 function WwOnError(e, wwID, dotnethelper) {
@@ -11,36 +11,12 @@ function WwOnMessage(e, wwID, dotnethelper) {
  
     if (e.data.isBinary) {
 
-        var allocateArrayMethod = Blazor.platform.findMethod(
-            'BlazorWebWorkerHelper',
-            'BlazorWebWorkerHelper',
-            'StaticClass',
-            'AllocateArray'
-        );
-
-        var dotNetArray = Blazor.platform.callMethod(allocateArrayMethod,
-            null,
-            [Blazor.platform.toDotNetString(e.data.binarydata.byteLength.toString())]);
-
-        var arr = Blazor.platform.toUint8Array(dotNetArray);
-
-       
-        arr.set(new Uint8Array(e.data.binarydata));
-
-        var receiveResponseMethod = Blazor.platform.findMethod(
-            'BlazorWebWorkerHelper',
-            'BlazorWebWorkerHelper',
-            'StaticClass',
-            'HandleMessageBinary'
-        );
+        tmpValue1 = e.data.binarydata;
 
         e.data.binarydata = null;
-        
-       
-        Blazor.platform.callMethod(receiveResponseMethod,
-            null,
-            [dotNetArray, Blazor.platform.toDotNetString(wwID), Blazor.platform.toDotNetString(JSON.stringify(e.data))]);
 
+        Module.mono_call_static_method('[BlazorWebWorkerHelper] BlazorWebWorkerHelper.StaticClass:AllocateArray',
+            [tmpValue1.byteLength, wwID, JSON.stringify(e.data)]);
     }
     else {
 
@@ -130,12 +106,12 @@ window.BwwJsFunctions = {
     WwSendDedicatedBinary: function (id, bag, data) {
         var result = false;
 
-        var index = WebWorkers_array.findIndex(x => x.id === Blazor.platform.toJavaScriptString(id));
+        var index = WebWorkers_array.findIndex(x => x.id === BINDING.conv_string(id));
 
         if (index > -1) {
 
-            b = JSON.parse(Blazor.platform.toJavaScriptString(bag));
-
+            b = JSON.parse(BINDING.conv_string(bag));
+          
             //it is cloning arraybuffer, direct without cloning was giving error!
             buffer = new Uint8Array(Array.from(Blazor.platform.toUint8Array(data))).buffer;
            
@@ -163,11 +139,11 @@ window.BwwJsFunctions = {
     WwSendSharedBinary: function (id, bag, data) {
         var result = false;
 
-        var index = WebWorkers_array.findIndex(x => x.id === Blazor.platform.toJavaScriptString(id));
+        var index = WebWorkers_array.findIndex(x => x.id === BINDING.conv_string(id));
 
         if (index > -1) {
            
-            b = JSON.parse(Blazor.platform.toJavaScriptString(bag));
+            b = JSON.parse(BINDING.conv_string(bag));
 
             //it is cloning arraybuffer, direct without cloning was giving error!
             buffer = new Uint8Array(Array.from(Blazor.platform.toUint8Array(data))).buffer;
@@ -179,5 +155,13 @@ window.BwwJsFunctions = {
         }
 
         return result;
+    },
+    GetBinaryData: function (d) {
+
+        var destinationUint8Array = Blazor.platform.toUint8Array(d);
+        destinationUint8Array.set(new Uint8Array(tmpValue1));
+
+        tmpValue1 = null;
+        return true;
     },
 };

@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static BlazorWebWorkerHelper.classes.BwwEnums;
 
@@ -17,6 +18,9 @@ namespace BlazorWebWorkerHelper
 {
     public class WebWorkerHelper : IDisposable
     {
+
+        BwwJsInterop bwwJsInterop;
+
         public BWorkerType bworkerType { get; private set; } = BWorkerType.dedicated;
 
         public BwwTransportType bwwTransportType { get; private set; } = BwwTransportType.Text;
@@ -48,8 +52,15 @@ namespace BlazorWebWorkerHelper
 
         public List<BWebSocket> Ws_List = new List<BWebSocket>();
 
-        public WebWorkerHelper(string Par_URL,string Par_NameForSharedWW, BWorkerType par_WorkerType, BwwTransportType par_TransportType)
+        private IJSRuntime _JSRuntime;
+
+        public WebWorkerHelper(string Par_URL,string Par_NameForSharedWW, BWorkerType par_WorkerType, BwwTransportType par_TransportType, IJSRuntime jsRuntime)
         {
+            _JSRuntime = jsRuntime ??
+           throw new ArgumentNullException($"{nameof(jsRuntime)} missing. Try injecting it in your component, then passing it from OnAfterRender.");
+
+
+            bwwJsInterop = new BwwJsInterop(_JSRuntime);
 
             _initialize(Par_URL, Par_NameForSharedWW, par_WorkerType, par_TransportType);
         }
@@ -75,7 +86,7 @@ namespace BlazorWebWorkerHelper
 
         private void _create()
         {
-            BwwJsInterop.WwAdd(_id, _url, _NameForSharedWW, bworkerType, new DotNetObjectRef(this));
+            bwwJsInterop.WwAdd(_id, _url, _NameForSharedWW, bworkerType, DotNetObjectReference.Create(this));
         }
 
         public void Send(BCommandType WCommandType, string Par_Message, string AdditionalArgs, bool AddToLog=true)
@@ -83,7 +94,7 @@ namespace BlazorWebWorkerHelper
             if (!string.IsNullOrEmpty(Par_Message))
             {
              
-                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message, AdditionalArgs);
+                bwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message, AdditionalArgs);
 
 
                 if (DoLog && AddToLog)
@@ -116,7 +127,7 @@ namespace BlazorWebWorkerHelper
             {
 
                
-                BwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message, AdditionalArgs);
+                bwwJsInterop.WwSend(_id, bworkerType, WCommandType, Par_Message, AdditionalArgs);
 
                 if (DoLog && AddToLog)
                 {
@@ -172,7 +183,7 @@ namespace BlazorWebWorkerHelper
         public void InvokeOnMessage(string par_message)
         {
            
-            BwwBag msg = Json.Deserialize<BwwBag>(par_message);
+            BwwBag msg = JsonSerializer.Deserialize<BwwBag>(par_message);
          
             BwwMessage b = new BwwMessage
             {
@@ -212,7 +223,7 @@ namespace BlazorWebWorkerHelper
         public void InvokeOnMessageBinary(byte[] data, string bag)
         {
 
-            BwwBag msg = Json.Deserialize<BwwBag>(bag);
+            BwwBag msg = JsonSerializer.Deserialize<BwwBag>(bag);
             msg.binarydata = data;
 
 
@@ -240,7 +251,8 @@ namespace BlazorWebWorkerHelper
             OnMessage?.Invoke(b);
         }
 
-       
+
+        
 
         public BWebSocket GetActiveWebSocket()
         {
@@ -271,14 +283,14 @@ namespace BlazorWebWorkerHelper
             }
         }
 
-            public void Dispose()
+        public void Dispose()
         {
             if (DoLog)
             {
                 Log = new List<BwwMessage>();
             }
             InvokeStateChanged(2);
-            BwwJsInterop.WwRemove(_id);
+            bwwJsInterop.WwRemove(_id);
 
 
             StaticClass.webWorkerHelpers_List.Remove(this);
