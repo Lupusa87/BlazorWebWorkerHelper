@@ -5,19 +5,19 @@
     <RazorLangVersion>3.0</RazorLangVersion>
     
     <Authors>Lupusa</Authors>
-    <Version>1.0.5</Version>
+    <Company>Lupusa</Company>
+
     <Description>This package contains web worker helper class for blazor.</Description>
     <RepositoryUrl>https://github.com/Lupusa87/BlazorWebWorkerHelper</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageTags>Blazor</PackageTags>
-    <PackageReleaseNotes>First release 1/16/2019
-Release 2 - 1/26/2019
-Release 3,4 - 1/28/2019
-Release 5 - 2/7/2019 update to 0.8.0</PackageReleaseNotes>
+    <PackageProjectUrl>https://lupblazordemos.z13.web.core.windows.net/DedicatedWebWorkerPage</PackageProjectUrl>
     <NeutralLanguage>en</NeutralLanguage>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
-    <FileVersion>1.0.5.0</FileVersion>
+    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <FileVersion>1.0.7.0</FileVersion>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,15 +26,10 @@ Release 5 - 2/7/2019 update to 0.8.0</PackageReleaseNotes>
 
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.0-preview.3.20215.14" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.0-preview.3.20215.14" />
-    <PackageReference Include="Mono.WebAssembly.Interop" Version="5.0.0-preview.3.20215.14" />
-    <PackageReference Include="System.Text.Json" Version="5.0.0-preview.3.20214.6" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\BlazorWindowHelper\BlazorWindowHelper.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.0-preview.4.20257.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.0-preview.4.20257.10" />
+    <PackageReference Include="Mono.WebAssembly.Interop" Version="5.0.0-preview.4.20257.10" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0-preview.4.20251.6" />
   </ItemGroup>
 
 </Project>
