@@ -17,9 +17,15 @@ Please send [email](mailto:VakhtangiAbashidze@gmail.com) if you consider to **hi
 
 This repo contains pure Web Worker library for blazor, you can work with **dedicated** or **shared** web workers.
 
-[Project](https://www.nuget.org/packages/BlazorWebWorkerHelper/) is available on nuget.
+Helper is available on [nuget](https://www.nuget.org/packages/BlazorWebWorkerHelper/)
 
 For install use command - **Install-Package BlazorWebWorkerHelper**
+
+After installing package please add bellow script to your index.html
+
+```
+<script src="_content/BlazorWebWorkerHelper/BwwJsInterop.js"></script>
+```
 
 You can use web worker in blazor easy and convenient way using this library.
 
