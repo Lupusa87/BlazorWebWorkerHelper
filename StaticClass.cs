@@ -1,6 +1,5 @@
 ﻿using BlazorWebWorkerHelper.classes;
 using Microsoft.JSInterop;
-using Mono.WebAssembly.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace BlazorWebWorkerHelper
     {
         public static List<WebWorkerHelper> webWorkerHelpers_List = new List<WebWorkerHelper>();
 
-        public static MonoWebAssemblyJSRuntime monoWebAssemblyJSRuntime = new MonoWebAssemblyJSRuntime();
+        public static IJSUnmarshalledRuntime _jsUnmarshalledRuntime;
 
         [JSInvokable]
         public static void AllocateArray(int length, string a, string a2)
@@ -23,7 +22,7 @@ namespace BlazorWebWorkerHelper
             byte[] b = new byte[length];
 
 
-            monoWebAssemblyJSRuntime.InvokeUnmarshalled<byte[], bool>("BwwJsFunctions.GetBinaryData", b);
+            _jsUnmarshalledRuntime.InvokeUnmarshalled<byte[], bool>("BwwJsFunctions.GetBinaryData", b);
 
             HandleMessageBinary(b, a, a2);
 

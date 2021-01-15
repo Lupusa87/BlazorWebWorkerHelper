@@ -208,18 +208,6 @@ namespace BlazorWebWorkerHelper
             OnMessage?.Invoke(b);
         }
 
-
-        private object ByteArrayToObject(byte[] arrBytes)
-        {
-            MemoryStream memStream = new MemoryStream();
-            BinaryFormatter binForm = new BinaryFormatter();
-            memStream.Write(arrBytes, 0, arrBytes.Length);
-            memStream.Seek(0, SeekOrigin.Begin);
-            object obj = (object)binForm.Deserialize(memStream);
-
-            return obj;
-        }
-
         public void InvokeOnMessageBinary(byte[] data, string bag)
         {
 

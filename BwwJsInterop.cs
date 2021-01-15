@@ -1,5 +1,4 @@
 using Microsoft.JSInterop;
-using Mono.WebAssembly.Interop;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static BlazorWebWorkerHelper.classes.BwwEnums;
@@ -11,9 +10,14 @@ namespace BlazorWebWorkerHelper
     {
 
         private IJSRuntime _JSRuntime;
-        public BwwJsInterop(IJSRuntime jsRuntime) => _JSRuntime = jsRuntime;
+        private IJSUnmarshalledRuntime _jsUnmarshalledRuntime;
 
-        public static MonoWebAssemblyJSRuntime monoWebAssemblyJSRuntime = new MonoWebAssemblyJSRuntime();
+        public BwwJsInterop(IJSRuntime jsRuntime)
+        {
+            _JSRuntime = jsRuntime;
+            _jsUnmarshalledRuntime = jsRuntime as IJSUnmarshalledRuntime;
+            StaticClass._jsUnmarshalledRuntime = _jsUnmarshalledRuntime;
+        }
 
         public ValueTask<string> Alert(string message)
         {
@@ -67,7 +71,7 @@ namespace BlazorWebWorkerHelper
             {
 
 
-                    return monoWebAssemblyJSRuntime.InvokeUnmarshalled<string, string, byte[], bool>(
+                    return _jsUnmarshalledRuntime.InvokeUnmarshalled<string, string, byte[], bool>(
                         "BwwJsFunctions.WwSendSharedBinary",
                         WwID,
                         bag,
@@ -77,7 +81,7 @@ namespace BlazorWebWorkerHelper
             else
             {
 
-                    return monoWebAssemblyJSRuntime.InvokeUnmarshalled<string, string, byte[], bool>(
+                    return _jsUnmarshalledRuntime.InvokeUnmarshalled<string, string, byte[], bool>(
                         "BwwJsFunctions.WwSendDedicatedBinary",
                         WwID,
                         bag,
